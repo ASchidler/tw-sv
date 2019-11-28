@@ -86,7 +86,6 @@ class SvEncoding:
             self._add_clause(-self.ord[u][v], self.arc[u][v])
             self._add_clause(self.ord[u][v], self.arc[v][u])
 
-
     def encode_smt(self, g, stream, lb=0, ub=0):
         self.ord = {x: SelfNamingDict(lambda x: self._add_var(x), f"ord_{x}_{{}}") for x in range(0, len(g.nodes))}
         self.arc = {x: SelfNamingDict(lambda x: self._add_var(x), f"arc_{x}_{{}}") for x in range(0, len(g.nodes))}
@@ -104,7 +103,7 @@ class SvEncoding:
 
         self.encode()
         #self.encode_cardinality_smt(ub)
-        self.encode_cardinality_sat(ub-4, self.arc)
+        self.encode_cardinality_sat(ub, self.arc)
 
         # stream.write("(minimize m)\n")
         stream.write("(check-sat)\n")

@@ -8,7 +8,6 @@ class ImprovedSvEncoding(sv.SvEncoding):
     def encode(self):
         # Add clique literals first, allows solver to immediately discard later redundant clauses
         self.encode_cliques()
-        super().encode()
 
         # These are binary clauses that are not necessary, but help the solver
         for i in range(0, len(self.g.nodes)):
@@ -18,6 +17,8 @@ class ImprovedSvEncoding(sv.SvEncoding):
                 # Enforce arc direction from smaller to bigger ordered vertex
                 self._add_clause(-self.ord[i][j], -self.arc[j][i])
                 self._add_clause(self.ord[i][j], -self.arc[i][j])
+
+        super().encode()
 
     def encode_cliques(self):
         """Enforces lexicographical ordering of the cliques"""
