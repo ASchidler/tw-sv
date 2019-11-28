@@ -47,7 +47,7 @@ f2 = open("test.txt", "w+")
 #slv.encode()
 slv = svi.ImprovedSvEncoding(f2, g)
 #slv.encode_smt(g, f2, lb=lb, ub=ub)
-slv.encode_sat(ub)
+slv.encode_sat(ub-1)
 
 f2.close()
 

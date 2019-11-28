@@ -69,8 +69,9 @@ class SvEncoding:
                     # Additional edges due to linear ordering
                     if j < l:
                         # ord instead of _ord is on purpose in both clauses
-                        self._add_clause(-self.arc[i][j], -self.arc[i][l], -self.ord[j][l], self.arc[j][l])
-                        self._add_clause(-self.arc[i][j], -self.arc[i][l], self.ord[j][l], self.arc[l][j])
+                        # TODO: This is necessary in the non-improved encoding...
+                        # self._add_clause(-self.arc[i][j], -self.arc[i][l], -self.ord[j][l], self.arc[j][l])
+                        # self._add_clause(-self.arc[i][j], -self.arc[i][l], self.ord[j][l], self.arc[l][j])
 
                         # Redundant, but speeds up solving
                         self._add_clause(-self.arc[i][j], -self.arc[i][l], self.arc[j][l], self.arc[l][j])
@@ -79,9 +80,12 @@ class SvEncoding:
         for u, v in self.g.edges:
             u = self.node_lookup[u]
             v = self.node_lookup[v]
-            if u < v:
-                self._add_clause(-self.ord[u][v], self.arc[u][v])
-                self._add_clause(self.ord[u][v], self.arc[v][u])
+
+            if u > v:
+                u, v = v, u
+            self._add_clause(-self.ord[u][v], self.arc[u][v])
+            self._add_clause(self.ord[u][v], self.arc[v][u])
+
 
     def encode_smt(self, g, stream, lb=0, ub=0):
         self.ord = {x: SelfNamingDict(lambda x: self._add_var(x), f"ord_{x}_{{}}") for x in range(0, len(g.nodes))}
