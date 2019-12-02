@@ -1,7 +1,5 @@
-import networkx as nx
-from sys import maxsize
-from collections import deque
-from random import randint
+#TODO: This should also work with second highest degree
+
 
 class MinDegreeQueue:
     def __init__(self, g):
@@ -54,6 +52,7 @@ class MinDegreeQueue:
 
 
 def mmd(og):
+    """Finds a minimum degree lower bound based on minors (MMD+)"""
     g = og.copy()
     bound = 0
     q = MinDegreeQueue(g)
@@ -78,119 +77,10 @@ def mmd(og):
 
     return bound
 
-def mmdr(og):
-    g = og.copy()
-    bound = 0
-
-    while len(g.nodes) > 1:
-        d, v = min((len(g[x]), x) for x in g.nodes)
-        bound = max(bound, d)
-
-        nbs = set(g[v])
-
-        # Select neighbor with minimum number of common neighbors
-        _, tg = min((len(nbs & set(g[u])), u) for u in nbs)
-
-        # Contract
-        for u in g[tg]:
-            if u != v and u not in g[v]:
-                g.add_edge(u, v)
-
-        g.remove_node(tg)
-
-    return bound
-
-def build_decomposition(go, ordering):
-    g = go.copy()
-    tw = 0
-    #bags = {x: {x} for x in ordering}
-    for n in ordering:
-        # Last bag is just the node itself
-        if len(g.nodes) > 1:
-            tw = max(tw, len(g[n]))
-            #bags[n] = set(g[n])
-            #bags[n].add(n)
-
-            for u in g[n]:
-                for v in g[n]:
-                    if u < v:
-                        g.add_edge(u, v)
-            g.remove_node(n)
-
-    return tw
-
-def greedy(go):
-    g = go.copy()
-    ordering = []
-    q = MinDegreeQueue(g)
-
-    # Define ordering based on min degree
-    while q.has_next():
-        n, d = q.next()
-
-        ordering.append(n)
-        q.remove(n)
-
-        for u in g[n]:
-            for v in g[n]:
-                if u < v and v not in g[u]:
-                    q.add_edge(u, v)
-                    g.add_edge(u, v)
-
-        g.remove_node(n)
-
-    # Build decomposition
-    bnd = build_decomposition(go, ordering)
-    return improve_ub(go, ordering, bound=bnd)
-
-
-
-
-def greedy_fi(go):
-    g = go.copy()
-    ordering = []
-
-    while len(g.nodes) > 0:
-        c_min = maxsize
-        c_node = None
-
-        for n in g.nodes:
-            val = len(g[n])
-            for u in g[n]:
-                for v in g[n]:
-                    if u < v and not g.has_edge(u, v):
-                        val += 1
-
-            if val < c_min:
-                c_min = val
-                c_node = n
-
-        ordering.append(c_node)
-        for u in g[c_node]:
-            for v in g[c_node]:
-                if u < v and v not in g[u]:
-                    g.add_edge(u, v)
-
-        g.remove_node(c_node)
-
-    ps = {x: ordering.index(x) for x in ordering}
-    g = go.copy()
-    bags = {}
-    for n in ordering:
-        if len(g.nodes) == 1:
-            bags[n] = {n}
-        else:
-            _, nb = min((ps[x], x) for x in g[n])
-            bags[n] = set(g[nb])
-            for u in g[n]:
-                for v in g[n]:
-                    if u < v:
-                        g.add_edge(u, v)
-
-    return max(len(x) for x in bags.values()) - 1
-
 
 def improve(go, bound):
+    """Computes the bound-improved graph. I.e. if u and v are non-adjacent and share bound+1 neighbors, adds {u,v}"""
+
     g = go.copy()
     changed = True
 
@@ -214,6 +104,7 @@ def improve(go, bound):
 
 
 def lbn(go):
+    """Tightens the mmd"""
     bound = mmd(go)
     changed = True
 
@@ -237,7 +128,7 @@ def lbnp(go):
     while changed:
         changed = False
         g = improve(go, bound)
-        bound2 = mmdr(g)
+        bound2 = mmd(g)
 
         while bound2 <= bound and len(g.nodes) > 1:
             # Select minimum degree vertex
@@ -255,31 +146,10 @@ def lbnp(go):
 
             # Improve
             g = improve(g, bound)
-            bound2 = mmdr(g)
+            bound2 = mmd(g)
 
         if bound2 > bound:
             bound += 1
             changed = True
-
-    return bound
-
-
-def improve_ub(go, ord, rounds=0, bound=maxsize):
-    forbidden = deque(maxlen=min(len(ord)//2, 10))
-    new_try = -1
-
-    for _ in range(0, rounds):
-        while new_try in forbidden:
-            new_try = randint(0, len(ord)-2)
-
-        forbidden.append(new_try)
-        ord[new_try], ord[new_try+1] = ord[new_try+1], ord[new_try]
-
-        result = build_decomposition(go, ord)
-
-        if result > bound:
-            ord[new_try], ord[new_try + 1] = ord[new_try + 1], ord[new_try]
-        elif result < bound:
-            bound = result
 
     return bound

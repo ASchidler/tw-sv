@@ -110,23 +110,24 @@ class SvEncoding:
         stream.write("(get-model)\n")
 
     def encode_sat(self, target):
+        # The whole temporary file switching is a workaround since we do not calculate the number of clauses before
+        # But this information would be needed for the header
         tmp_stream = self.stream
-        self.stream = open("tmp_sat.txt", "w")
+        tmp_file = f"tmp_{os.getpid()}.txt"
+        self.stream = open(tmp_file, "w+")
         self.ord = {x: SelfNamingDict(lambda: self._add_var()) for x in range(0, len(self.g.nodes))}
         self.arc = {x: SelfNamingDict(lambda: self._add_var()) for x in range(0, len(self.g.nodes))}
 
         self.encode()
         self.encode_cardinality_sat(target, self.arc)
 
-        self.stream.close()
-        self.stream = tmp_stream
+        tmp_stream, self.stream = self.stream, tmp_stream
 
         self.stream.write(f"p cnf {len(self.vars) - 1} {self.num_clauses}\n")
-        tmp_stream = open("tmp_sat.txt")
+        tmp_stream.seek(0)
         self.stream.write(tmp_stream.read())
         tmp_stream.close()
-
-        os.remove("tmp_sat.txt")
+        os.remove(tmp_file)
 
     def encode_cardinality_smt(self, ub):
         for i in range(0, len(self.g.nodes)):
@@ -151,11 +152,11 @@ class SvEncoding:
         # Define counter variables
         ctr = [[[self._add_var()
                  for l in range(0, min(j, bound))]
-                for j in range(1, len(self.g.nodes))]
-               for i in range(0, len(self.g.nodes))]
+                for j in range(1, len(variables[0]))]
+               for i in range(0, len(variables))]
 
-        for i in range(0, len(self.g.nodes)):
-            for j in range(1, len(self.g.nodes) - 1):
+        for i in range(0, len(variables)):
+            for j in range(1, len(variables[i]) - 1):
                 for l in range(0, min(j, bound)):
                     # Ensure counter never decrements
                     self._add_clause(-ctr[i][j - 1][l], ctr[i][j][l])
@@ -165,11 +166,11 @@ class SvEncoding:
                         self._add_clause(-variables[i][j], -ctr[i][j-1][l-1], ctr[i][j][l])
 
         # Increment counter
-        for i in range(0, len(self.g.nodes)):
-            for j in range(1, len(self.g.nodes) - 1):
+        for i in range(0, len(variables)):
+            for j in range(1, len(variables[i]) - 1):
                 self._add_clause(-variables[i][j], ctr[i][j][0])
 
         # Conflict if target is exceeded
-        for i in range(0, len(self.g.nodes)):
-            for j in range(bound, len(self.g.nodes) - 1):
+        for i in range(0, len(variables)):
+            for j in range(bound, len(variables[i]) - 1):
                 self._add_clause(-variables[i][j], -ctr[i][j-1][bound - 1])
