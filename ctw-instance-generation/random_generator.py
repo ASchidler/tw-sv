@@ -41,5 +41,5 @@ def generate_random(vertices, path, delete_edges, c_vertices):
         f.write(f"{u}\n")
 
 p = "/home/aschidler/tmp/ctree"
-for i in range(11, 20):
-    generate_random(50, os.path.join(p, f"{i}.gr"), 0.7, 0.1)
+for i in range(21, 31):
+    generate_random(150, os.path.join(p, f"{i}.gr"), 0.8, 0.1)

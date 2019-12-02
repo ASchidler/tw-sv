@@ -1,4 +1,3 @@
-import networkx as nx
 from sys import maxsize
 from collections import deque
 from random import randint
@@ -18,7 +17,7 @@ def greedy(g, criterion):
 
 
 def improve_ub(g_in, ord, rounds=0, bound=maxsize):
-    g= g_in.copy()
+    g = g_in.copy()
     forbidden = deque(maxlen=min(len(ord)//2, 10))
     new_try = -1
 

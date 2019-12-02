@@ -17,15 +17,15 @@ class MinDegreeCriterion:
         self.cmin = 0
 
     def choose(self):
+        # Choose min degree vertex
+        return self.q[self.cmin].pop()
+
+    def next(self):
         while len(self.q[self.cmin]) == 0:
             self.cmin += 1
             if self.cmin > self.max_degree:
                 return None
 
-        # Choose min degree vertex
-        return self.q[self.cmin].pop()
-
-    def next(self):
         n = self.choose()
 
         # Eliminate
@@ -53,6 +53,7 @@ class MinDegreeCriterion:
 
         if dgn > self.max_degree:
             self.q.append(set())
+            self.max_degree = dgn
         if dgn < self.cmin:
             self.cmin = dgn
 

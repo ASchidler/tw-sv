@@ -1,4 +1,4 @@
-#TODO: This should also work with second highest degree
+# TODO: Try different contraction strategies, especially for GHTW it may be better
 
 
 class MinDegreeQueue:
@@ -20,8 +20,16 @@ class MinDegreeQueue:
 
         n = self.q[self.cmin].pop()
         d = self.degrees.pop(n)
+        d2 = 0
 
-        return n, d
+        while not self.q[self.cmin] and self.cmin <= self.max_degree:
+            self.cmin += 1
+
+        # The second lowest degree may give a better bound
+        if self.q[self.cmin]:
+            d2 = self.cmin
+
+        return n, d, d2
 
     def remove(self, n):
         for u in self.g[n]:
@@ -58,9 +66,9 @@ def mmd(og):
     q = MinDegreeQueue(g)
 
     while len(g.nodes) > 1:
-        v, d = q.next()
+        v, d, d2 = q.next()
 
-        bound = max(bound, d)
+        bound = max(bound, d2)
         nbs = set(g[v])
 
         # Select neighbor with minimum number of common neighbors

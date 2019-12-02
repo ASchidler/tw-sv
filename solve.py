@@ -6,38 +6,37 @@ import upper_bounds as ubs
 import lower_bounds as lbs
 import subprocess
 import os
+import ctw.c_bound as cb
+import parse.ctw_parser as ps
 
-f = open(sys.argv[1])
-g = nx.Graph()
-c_vertices = set()
-
-mode_edges = True
-for line in f:
-    entries = line.strip().split(' ')
-    if mode_edges:
-        if line.lower().strip() == "cvertices":
-            mode_edges = False
-        else:
-            if len(entries) == 2:
-                try:
-                    g.add_edge(int(entries[0]), int(entries[1]))
-                except ValueError:
-                    pass
-    else:
-        if len(entries) == 1:
-            try:
-                c_vertices.add(int(entries[0]))
-            except ValueError:
-                pass
-f.close()
+g, c_vertices = ps.parse(sys.argv[1])
 
 print(f"Found {len(g.nodes)} nodes and {len(g.edges)} edges")
 
-ub = ubs.greedy_min_degree(g)
-print(f"Upper Bound: {ub}")
+if len(c_vertices) == 0:
+    ub = ubs.greedy_min_degree(g)
+    print(f"Upper Bound: {ub}")
 
-lb = lbs.lbnp(g)
-print(f"Lower Bound: {lb}")
+    lb = lbs.lbnp(g)
+    print(f"Lower Bound: {lb}")
+else:
+    bounds = {
+        "min_degree": cb.min_degree(g, c_vertices),
+        "min_degree_c": cb.min_degree_min_c(g, c_vertices),
+        "min_c": cb.min_c(g, c_vertices),
+        "two_pass": cb.twopass(g, c_vertices),
+        "incremental": cb.incremental_c_min_degree(g, c_vertices),
+        "c_bound": cb.c_bound_min_degree(g, c_vertices, 3),
+    }
+
+    for k, v in bounds.items():
+        print(f"{k}: {v}")
+
+    ub = min(bounds.values())[0]
+    print(f"Upper Bound: {ub}")
+
+    lb = lbs.lbnp(g)
+    print(f"Lower Bound: {lb}")
 
 
 cval = ub - 1
