@@ -1,5 +1,4 @@
 import sys
-import networkx as nx
 import sv_improved as svi
 from ctw import c_sv as svc
 import upper_bounds as ubs
@@ -40,6 +39,7 @@ else:
 
 
 cval = ub - 1
+lb_done = False
 
 # Upper bound is already a solution, so look starting from ub - 1
 filename = f"{os.getpid()}_encoding.txt"
@@ -55,16 +55,27 @@ while lb <= cval < ub:
     slv.encode_sat(cval)
     f2.seek(0)
     p1 = subprocess.Popen(['minisat', '-verb=0'], stdin=f2)
-    p1.wait(750)
+    try:
+        p1.wait(30)
 
-    if p1.returncode == 10:
-        print("Success")
-        ub = cval
-        cval -= 1
-    else:
-        print("Failed")
-        lb = cval
-        cval += 1
+        if p1.returncode == 10:
+            print("Success")
+            ub = cval
+            cval -= 1
+        else:
+            print("Failed")
+            cval += 1
+            lb = cval
+
+    except subprocess.TimeoutExpired:
+        # If Timeout exceeded, try other direction
+        if not lb_done:
+            print("Timeout, trying other direction")
+            lb_done = True
+            cval = lb
+        else:
+            print(f"Solving timed out, width is between {lb} and {ub}")
+            exit(1)
 
     f2.close()
     os.remove(filename)
