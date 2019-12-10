@@ -56,7 +56,7 @@ while lb <= cval < ub:
     f2.seek(0)
     p1 = subprocess.Popen(['minisat', '-verb=0'], stdin=f2)
     try:
-        p1.wait(30)
+        p1.wait(300)
 
         if p1.returncode == 10:
             print("Success")

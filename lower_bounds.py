@@ -65,6 +65,7 @@ def mmd(og):
     bound = 0
     q = MinDegreeQueue(g)
 
+    # TODO: 1 could be replaced by bound, if there are fewer than bound many nodes left, degree cant be bigger than bound
     while len(g.nodes) > 1:
         v, d, d2 = q.next()
 
