@@ -5,8 +5,9 @@ import upper_bounds as ubs
 import lower_bounds as lbs
 import subprocess
 import os
-import ctw.c_bound as cb
+import ctw.c_upper_bound as cb
 import parse.ctw_parser as ps
+import ctw.c_lower_bound as clb
 
 g, c_vertices = ps.parse(sys.argv[1])
 
@@ -19,13 +20,16 @@ if len(c_vertices) == 0:
     lb = lbs.lbnp(g)
     print(f"Lower Bound: {lb}")
 else:
+    c_lb = clb.c_lower_bound(g, c_vertices)
+    print(f"Lower bound C: {c_lb}")
+
     bounds = {
-        "min_degree": cb.min_degree(g, c_vertices),
-        "min_degree_c": cb.min_degree_min_c(g, c_vertices),
+        #"min_degree": cb.min_degree(g, c_vertices),
+        #"min_degree_c": cb.min_degree_min_c(g, c_vertices),
         "min_c": cb.min_c(g, c_vertices),
-        "two_pass": cb.twopass(g, c_vertices),
-        "incremental": cb.incremental_c_min_degree(g, c_vertices),
-        "c_bound": cb.c_bound_min_degree(g, c_vertices, 3),
+        #"two_pass": cb.twopass(g, c_vertices),
+        #"incremental": cb.incremental_c_min_degree(g, c_vertices),
+        #"c_bound": cb.c_bound_min_degree(g, c_vertices, 3),
     }
 
     for k, v in bounds.items():

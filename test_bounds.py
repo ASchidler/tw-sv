@@ -1,6 +1,7 @@
 import os
 import parse.ctw_parser as ps
-import ctw.c_bound as cb
+import ctw.c_upper_bound as cb
+import ctw.c_lower_bound as lb
 from sys import maxsize
 
 path = "/home/aschidler/tmp/ctree/"
@@ -14,6 +15,7 @@ for r, d, f in os.walk(path):
             print(f"Not a ctree instance {file}")
 
         print(file)
+        print(f"Lower Bound: {lb.c_lower_bound(g, c_vertices)}")
         bounds = {
             "min_degree": cb.min_degree(g, c_vertices),
             "min_degree_c": cb.min_degree_min_c(g, c_vertices),

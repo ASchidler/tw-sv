@@ -112,16 +112,16 @@ def improve(go, bound):
     return g
 
 
-def lbn(go):
+def lbn(go, lbf=mmd):
     """Tightens the mmd"""
-    bound = mmd(go)
+    bound = lbf(go)
     changed = True
 
     while changed:
         changed = False
         # Improve
         g = improve(go, bound)
-        bound2 = mmd(g)
+        bound2 = lbf(g)
 
         if bound2 > bound:
             changed = True
@@ -130,14 +130,14 @@ def lbn(go):
     return bound
 
 
-def lbnp(go):
+def lbnp(go, lbf=mmd):
     changed = True
-    bound = mmd(go)
+    bound = lbf(go)
 
     while changed:
         changed = False
         g = improve(go, bound)
-        bound2 = mmd(g)
+        bound2 = lbf(g)
 
         while bound2 <= bound and len(g.nodes) > 1:
             # Select minimum degree vertex
@@ -155,7 +155,7 @@ def lbnp(go):
 
             # Improve
             g = improve(g, bound)
-            bound2 = mmd(g)
+            bound2 = lbf(g)
 
         if bound2 > bound:
             bound += 1

@@ -2,6 +2,8 @@ from sys import maxsize
 
 import tw_utils as util
 import upper_bound_criteria as crit
+from random import randint
+import networkx as nx
 
 
 class MinDegreeCCriterion(crit.MinDegreeCriterion):
@@ -20,6 +22,34 @@ class MinDegreeCCriterion(crit.MinDegreeCriterion):
 
         self.q[self.cmin].remove(min_c[2])
         return min_c[2]
+
+
+class MinDegreeCFirstCriterion:
+    def __init__(self, g, reds):
+        self.g = g.copy()
+        self.reds = set(reds)
+
+    def next(self):
+        min_c = (maxsize, maxsize, None)
+
+        if self.reds:
+            for n in self.reds:
+                rval = 1 + len(set(self.g[n]) & self.reds)
+                min_c = min(min_c, (rval, len(self.g[n]), n))
+            self.reds.remove(min_c[2])
+        else:
+            for n in self.g:
+                min_c = min(min_c, (0, len(self.g[n]), n))
+
+        n = min_c[2]
+        nbs = self.g[n]
+        for u in nbs:
+            for v in nbs:
+                if u > v:
+                    self.g.add_edge(u, v)
+        self.g.remove_node(n)
+
+        return n
 
 
 class BoundedCCriterion(crit.MinDegreeCriterion):
@@ -115,9 +145,12 @@ def greedy(g, criterion, reds):
     while len(ordering) != len(g.nodes):
         ordering.append(criterion.next())
 
-    bags = util.ordering_to_decomp(g, ordering)
+    bags = util.ordering_to_decomp(g, ordering)[0]
     tw = max(len(x) for x in bags.values())
     c = max(len(x & reds) for x in bags.values())
+
+    tw, c = improve_swap(g, ordering, reds, bound_tw=tw, bound_c=c)
+    #tw, c = improve_scramble(g, ordering, reds, bound_c=c, bound_tw=tw)
 
     return tw, c
 
@@ -127,7 +160,7 @@ def min_degree(g, reds):
 
 
 def min_c(g, reds):
-    return greedy(g, MinCCriterion(g, reds), reds)
+    return greedy(g, MinDegreeCFirstCriterion(g, reds), reds)
 
 
 def c_bound_min_degree(g, reds, bound):
@@ -151,3 +184,60 @@ def twopass(g, reds):
         return greedy(g, BoundedCCriterion(g, reds, result[1]), reds)
     except RuntimeError:
         return result
+
+
+def improve_swap(g, ordering, reds, rounds=500, bound_tw=maxsize, bound_c=maxsize):
+    """Tries to improve the bound of an elimination ordering by swapping random elements"""
+
+    for _ in range(0, rounds):
+        t1 = randint(0, len(ordering) - 1)
+        t2 = randint(0, len(ordering) - 1)
+
+        ordering[t1], ordering[t2] = ordering[t2], ordering[t1]
+
+        bags = util.ordering_to_decomp(g, ordering)[0].values()
+
+        result_tw = max(len(x) for x in bags) - 1
+        result_c = max(len(reds & x) for x in bags)
+
+        if result_tw > bound_tw or result_c > bound_c:
+            ordering[t1], ordering[t2] = ordering[t2], ordering[t1]
+        else:
+            bound_tw = result_tw
+            bound_c = result_c
+
+    return bound_tw, bound_c
+
+
+def improve_scramble(g, ordering, reds, rounds=100, bound_tw=maxsize, bound_c=maxsize, interval=50):
+    """Tries to improve the bound by randomly scrambling the elements in an interval"""
+
+    # If interval is bigger than the length of the ordering, limit scope accordingly
+    if len(ordering) < interval:
+        limit = 0
+        interval = len(ordering)
+    else:
+        limit = len(ordering) - 1 - interval
+
+    for _ in range(0, rounds):
+        index = randint(0, limit) if limit > 0 else 0
+
+        old = ordering[index:index+interval]
+        for c_i in range(0, interval-1):
+            randindex = randint(0, interval - 1 - c_i) + index + c_i
+            ordering[index + c_i], ordering[randindex] = ordering[randindex], ordering[index + c_i]
+
+        bags = util.ordering_to_decomp(g, ordering)[0].values()
+
+        result_tw = max(len(x) for x in bags) - 1
+        result_c = max(len(reds & x) for x in bags)
+
+        # If the new bound is worse, restore
+        if result_tw > bound_tw or result_c > bound_c:
+            for i in range(0, interval):
+                ordering[index + i] = old[i]
+        else:
+            bound_tw = result_tw
+            bound_c = result_c
+
+    return bound_tw, bound_c
