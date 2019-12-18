@@ -111,11 +111,18 @@ class SvEncoding:
         stream.write("(get-model)\n")
 
     def encode_sat(self, target):
-        # The whole temporary file switching is a workaround since we do not calculate the number of clauses before
-        # But this information would be needed for the header
-        tmp_stream = self.stream
-        tmp_file = f"tmp_{os.getpid()}.txt"
-        self.stream = open(tmp_file, "w+")
+        # We do not know the exact number of variables and clauses beforehand. Leave a placeholder to change afterwards
+        # equals to ord + arc + ctr
+        estimated_vars = 2 * len(self.g.nodes) * len(self.g.nodes) + len(self.g.nodes) * len(self.g.nodes) * target
+        # This is way too much, but better too many than too few: m * n^4 * 100
+        estimated_clauses = 100 * len(self.g.edges) * len(self.g.nodes) \
+                            * len(self.g.nodes) * len(self.g.nodes) * len(self.g.nodes)
+
+        placeholder = f"p cnf {estimated_vars} {estimated_clauses}"
+        self.stream.write(placeholder)
+        self.stream.write("\n")
+
+        # Init variable references
         self.ord = {x: SelfNamingDict(lambda: self._add_var()) for x in range(0, len(self.g.nodes))}
         self.arc = {x: SelfNamingDict(lambda: self._add_var()) for x in range(0, len(self.g.nodes))}
 
@@ -127,13 +134,11 @@ class SvEncoding:
         self.encode()
         self.encode_cardinality_sat(target, self.arc)
 
-        tmp_stream, self.stream = self.stream, tmp_stream
-
-        self.stream.write(f"p cnf {len(self.vars) - 1} {self.num_clauses}\n")
-        tmp_stream.seek(0)
-        self.stream.write(tmp_stream.read())
-        tmp_stream.close()
-        os.remove(tmp_file)
+        header = f"p cnf {len(self.vars) - 1} {self.num_clauses}"
+        self.stream.seek(0)
+        self.stream.write(header)
+        for _ in range(len(header), len(placeholder)):
+            self.stream.write(" ")
 
     def encode_cardinality_smt(self, ub):
         for i in range(0, len(self.g.nodes)):
