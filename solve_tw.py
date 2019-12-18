@@ -51,7 +51,7 @@ def solve(g, inpf, outpf, timeout=300):
                 cval = lb
             else:
                 print(f"Timeout: Width is between {lb} and {ub}")
-                return -1
+                return -1, None
 
     print(f"\nFound tree width {ub}")
     return ub, ordering

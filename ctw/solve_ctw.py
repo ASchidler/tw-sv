@@ -17,6 +17,9 @@ def solve(g, c_vertices, inpf, outpf, offset=0, timeout=300):
     # For c-treewidth we have to find the optimal c-value
     tlb = 1
     cval = tub-1
+    knownc = cub
+    cub += offset
+
     while tlb <= cval < tub:
         print(f"\nLooking for decomposition of size {cval}, C: {cub}")
         f2 = open(inpf, "w+")
@@ -37,9 +40,9 @@ def solve(g, c_vertices, inpf, outpf, offset=0, timeout=300):
                 b, t, r = tw_utils.ordering_to_decomp(g, ordering)
                 # Check actual size of decomposition and proceed accordingly
                 tub = max(len(cb) - 1 for cb in b.values())
-                cub = max(len(cb & c_vertices) for cb in b.values())
+                knownc = max(len(cb & c_vertices) for cb in b.values())
                 cval = tub - 1
-                print(f"Found decomposition of size {tub}, C: {cub}")
+                print(f"Found decomposition of size {tub}, C: {knownc}")
             else:
                 print("Failed to find decomposition")
                 cval += 1
@@ -47,7 +50,7 @@ def solve(g, c_vertices, inpf, outpf, offset=0, timeout=300):
 
         except subprocess.TimeoutExpired:
             print(f"Timeout: Width is between {tlb} and {tub}")
-            return -1
+            return -1, None
 
-    print(f"\nFound tree width {tub}, C: {cub}")
+    print(f"\nFound tree width {tub}, C: {knownc}")
     return tub, ordering

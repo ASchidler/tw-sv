@@ -8,6 +8,7 @@ import solve_tw
 parser = argparse.ArgumentParser(description='Calculates the treewidth of a graph. Support C-Treewidth')
 parser.add_argument('graph', metavar='graph_file', type=str, help='The input file containing the graph')
 parser.add_argument('-c', dest='ctw', action='store_true', default=False, help='Treat as c-treewidth instance')
+parser.add_argument('-o', dest='offset', type=int, default=0, choices=range(0, 10), help='Use minimal c + offset')
 
 args = parser.parse_args()
 
@@ -22,7 +23,8 @@ filename = f"{os.getpid()}_encoding.txt"
 fileout = f"{os.getpid()}_result.txt"
 
 try:
-    ret, _ = solve_ctw.solve(g, c_vertices, filename, fileout) if args.ctw else solve_tw.solve(g, filename, fileout)
+    ret, _ = solve_ctw.solve(g, c_vertices, filename, fileout, offset=args.offset) if args.ctw \
+        else solve_tw.solve(g, filename, fileout)
 finally:
     if os.path.exists(filename):
         os.remove(filename)
