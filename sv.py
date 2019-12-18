@@ -30,6 +30,7 @@ class SvEncoding:
         self.stream = stream
         self.nodes = list(g.nodes)
         self.node_lookup = {self.nodes[n]: n for n in range(0, len(self.nodes))}
+        self.node_reverse_lookup = {n: self.nodes[n] for n in range(0, len(self.nodes))}
         self.num_clauses = 0
 
     def _add_var(self, nm=None):
@@ -118,6 +119,11 @@ class SvEncoding:
         self.ord = {x: SelfNamingDict(lambda: self._add_var()) for x in range(0, len(self.g.nodes))}
         self.arc = {x: SelfNamingDict(lambda: self._add_var()) for x in range(0, len(self.g.nodes))}
 
+        # Ensure that ord vars are first assigned, so we know the position
+        for i in range(0, len(self.g.nodes)):
+            for j in range(i+1, len(self.g.nodes)):
+                self._ord(i, j)
+
         self.encode()
         self.encode_cardinality_sat(target, self.arc)
 
@@ -149,28 +155,33 @@ class SvEncoding:
 
     def encode_cardinality_sat(self, bound, variables):
         """Enforces cardinality constraints. Cardinality of 2-D structure variables must not exceed bound"""
-        # Define counter variables
+        # Counter works like this: ctr[i][j][0] states that an arc from i to j exists
+        # These are then summed up incrementally edge by edge
+
+        # Define counter variables ctr[i][j][l] with 1 <= i <= n, 1 <= j < n, 1 <= l <= min(j, bound)
         ctr = [[[self._add_var()
-                 for l in range(0, min(j, bound))]
+                 for _ in range(0, min(j, bound))]
+                # j has range 0 to n-1. use 1 to n, otherwise the innermost number of elements is wrong
                 for j in range(1, len(variables[0]))]
-               for i in range(0, len(variables))]
+               for _ in range(0, len(variables))]
 
         for i in range(0, len(variables)):
             for j in range(1, len(variables[i]) - 1):
-                for l in range(0, min(j, bound)):
-                    # Ensure counter never decrements
-                    self._add_clause(-ctr[i][j - 1][l], ctr[i][j][l])
+                # Ensure that the counter never decrements, i.e. ensure carry over
+                for ln in range(0, min(len(ctr[i][j-1]), bound)):
+                    self._add_clause(-ctr[i][j - 1][ln], ctr[i][j][ln])
 
-                    # Carry over from previous column
-                    if l > 0:
-                        self._add_clause(-variables[i][j], -ctr[i][j-1][l-1], ctr[i][j][l])
+                # Increment counter for each arc
+                for ln in range(1, min(len(ctr[i][j]), bound)):
+                    self._add_clause(-variables[i][j], -ctr[i][j-1][ln-1], ctr[i][j][ln])
 
-        # Increment counter
+        # Ensure that counter is initialized on the first arc
         for i in range(0, len(variables)):
-            for j in range(1, len(variables[i]) - 1):
+            for j in range(0, len(variables[i]) - 1):
                 self._add_clause(-variables[i][j], ctr[i][j][0])
 
         # Conflict if target is exceeded
         for i in range(0, len(variables)):
-            for j in range(bound, len(variables[i]) - 1):
+            for j in range(bound, len(variables[i])):
+                # Since we start to count from 0, bound - 2
                 self._add_clause(-variables[i][j], -ctr[i][j-1][bound - 1])
