@@ -1,11 +1,10 @@
-from sys import maxsize
-from collections import deque
 from random import randint
-import upper_bound_criteria as cr
-
-import tw_utils as util
+from sys import maxsize
 
 import networkx as nx
+
+import tw_utils as util
+import upper_bound_criteria as cr
 
 
 def greedy(g, criterion):
@@ -38,18 +37,18 @@ def improve_swap(g, ordering, rounds=500, bound=maxsize):
             ordering[t1], ordering[t2] = ordering[t2], ordering[t1]
         else:
             bound = result
-    print(o - bound)
+
     return bound
 
 
 def improve_scramble(g, ordering, rounds=100, bound=maxsize, interval=15):
     """Tries to improve the bound by randomly scrambling the elements in an interval"""
 
-    o = bound
-    limit = len(ordering) - 1 - interval if len(ordering) > interval else len(ordering)
+    limit = len(ordering) - 1 - interval if len(ordering) > interval else 0
+    interval = min(interval, len(ordering))
 
     for _ in range(0, rounds):
-        index = randint(0, limit)
+        index = randint(0, limit) if limit > 0 else 0
 
         old = ordering[index:index+interval]
         for c_i in range(0, interval-1):
@@ -64,7 +63,7 @@ def improve_scramble(g, ordering, rounds=100, bound=maxsize, interval=15):
                 ordering[index + i] = old[i]
         else:
             bound = result
-    print(o - bound)
+
     return bound
 
 

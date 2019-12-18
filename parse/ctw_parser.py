@@ -13,9 +13,9 @@ def parse(path):
             if line.lower().strip() == "cvertices":
                 mode_edges = False
             else:
-                if len(entries) == 2:
+                if len(entries) == 2 or (len(entries) == 3 and entries[0].lower() == "e"):
                     try:
-                        g.add_edge(int(entries[0]), int(entries[1]))
+                        g.add_edge(int(entries[-2]), int(entries[-1]))
                     except ValueError:
                         pass
         else:
