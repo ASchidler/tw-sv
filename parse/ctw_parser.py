@@ -8,16 +8,17 @@ def parse(path):
 
     mode_edges = True
     for line in f:
-        entries = line.strip().split(' ')
+        entries = line.strip().split()
         if mode_edges:
             if line.lower().strip() == "cvertices":
                 mode_edges = False
             else:
-                if len(entries) == 2 or (len(entries) == 3 and entries[0].lower() == "e"):
+                if len(entries) == 2 or (len(entries) == 3 and entries[0].lower().strip() == "e"):
                     try:
-                        g.add_edge(int(entries[-2]), int(entries[-1]))
+                        g.add_edge(int(entries[-2].strip()), int(entries[-1].strip()))
                     except ValueError:
-                        pass
+                        if entries[0].lower().strip() == "e":
+                            g.add_edge(entries[-2].strip(), entries[-1])
         else:
             if len(entries) == 1:
                 try:

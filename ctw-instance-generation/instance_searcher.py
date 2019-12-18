@@ -24,7 +24,7 @@ def verify_file(str, filename):
                 edges = int(values[3])
 
                 # Check graph dimensions
-                if verts <= 100 and edges <= 500:
+                if 5 <= verts <= 100 and 1 <= edges <= 500:
                     keep = True
                     break
             except ValueError:
