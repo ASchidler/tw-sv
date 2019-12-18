@@ -104,3 +104,53 @@ def verify_decomposition(g_in, bags, tree):
             return False
 
     return True
+
+
+def minisat_extract_ordering(filename, num_nodes):
+    # The order variables are the first variables
+    with open(filename, "r") as f:
+        # This is specific for minisat... First line contains sat
+        # First read the values for the ordering variables
+        f.readline()
+        ords = {x: dict() for x in range(0, num_nodes)}
+
+        buffer = []
+
+        c_i = 0
+        c_j = 1
+
+        # Read the first n variables. Encoding makes sure, that they are the ordering variables.
+        while True:
+            c_char = f.read(1)
+            if not c_char:
+                break
+            elif c_char == " ":
+                if len(buffer) > 0:
+                    var = int(''.join(buffer))
+                    val = True if var > 0 else False
+                    ords[c_i][c_j] = val
+
+                    c_j += 1
+                    if c_j == num_nodes:
+                        c_i += 1
+                        c_j = c_i + 1
+                        if c_j == num_nodes:
+                            break
+
+                    buffer = []
+            else:
+                buffer.append(c_char)
+
+        # Establish ordering
+        ordering = []
+
+        for i in range(0, num_nodes):
+            pos = 0
+            for j in ordering:
+                if not ords[j][i]:
+                    break
+                pos += 1
+
+            ordering.insert(pos, i)
+
+        return ordering
