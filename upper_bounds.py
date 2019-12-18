@@ -18,7 +18,7 @@ def greedy(g, criterion):
     bound = improve_scramble(g, ordering, bound=bound)
     bound = improve_swap(g, ordering, bound=bound)
 
-    return bound
+    return bound, ordering
 
 
 def improve_swap(g, ordering, rounds=500, bound=maxsize):

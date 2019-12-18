@@ -152,7 +152,7 @@ def greedy(g, criterion, reds):
     tw, c = improve_swap(g, ordering, reds, bound_tw=tw, bound_c=c)
     #tw, c = improve_scramble(g, ordering, reds, bound_c=c, bound_tw=tw)
 
-    return tw, c
+    return tw, c, ordering
 
 
 def min_degree(g, reds):
