@@ -4,6 +4,7 @@ import os
 import ctw.solve_ctw as solve_ctw
 import parse.ctw_parser as ps
 import solve_tw
+import signal
 
 parser = argparse.ArgumentParser(description='Calculates the treewidth of a graph. Support C-Treewidth')
 parser.add_argument('graph', metavar='graph_file', type=str, help='The input file containing the graph')
@@ -17,6 +18,18 @@ g, c_vertices = ps.parse(args.graph)
 if args.ctw and len(c_vertices) == 0:
     print("No c-vertices found")
     exit(2)
+
+
+def terminateProcess():
+    if os.path.exists(filename):
+        os.remove(filename)
+    if os.path.exists(fileout):
+        os.remove(fileout)
+
+    exit(1)
+
+
+signal.signal(signal.SIGTERM, terminateProcess)
 
 # Upper bound is already a solution, so look starting from ub - 1
 filename = f"{os.getpid()}_encoding.txt"

@@ -3,16 +3,23 @@ import lower_bounds as lbs
 import sv_improved as svi
 import subprocess
 import tw_utils
+import sys
 
 
-def solve(g, inpf, outpf, timeout=300):
+def solve(g, inpf, outpf, timeout=300, target_tw=None):
     print(f"Graph has {len(g.nodes)} nodes and {len(g.edges)} edges")
     ub, ordering = ubs.greedy_min_degree(g)
     lb = lbs.lbnp(g)
+
     print(f"Upper Bound: {ub}")
     print(f"Lower Bound: {lb}")
 
     cval = ub - 1
+    if target_tw:
+        cval = target_tw
+        lb = target_tw
+        ub = min(ub, target_tw+1)
+
     lb_done = False
 
     # Incrementally search
@@ -38,8 +45,10 @@ def solve(g, inpf, outpf, timeout=300):
                 ub = max(len(cb) - 1 for cb in b.values())
                 cval = ub - 1
                 print(f"Found decomposition of size {ub}")
+                sys.stdout.flush()
             else:
                 print("Failed to find decomposition")
+                sys.stdout.flush()
                 cval += 1
                 lb = cval
 
@@ -47,11 +56,14 @@ def solve(g, inpf, outpf, timeout=300):
             # If Timeout exceeded, try other direction
             if not lb_done:
                 print("Timeout: Restarting from lower bound")
+                sys.stdout.flush()
                 lb_done = True
                 cval = lb
             else:
                 print(f"Timeout: Width is between {lb} and {ub}")
+                sys.stdout.flush()
                 return -1, None
 
     print(f"\nFound tree width {ub}")
+    sys.stdout.flush()
     return ub, ordering

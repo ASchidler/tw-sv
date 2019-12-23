@@ -4,6 +4,7 @@ import ctw.c_lower_bound as clb
 import ctw.c_upper_bound as cb
 import tw_utils
 from ctw import c_sv as svc
+import sys
 
 
 def solve(g, c_vertices, inpf, outpf, offset=0, timeout=300):
@@ -43,14 +44,18 @@ def solve(g, c_vertices, inpf, outpf, offset=0, timeout=300):
                 knownc = max(len(cb & c_vertices) for cb in b.values())
                 cval = tub - 1
                 print(f"Found decomposition of size {tub}, C: {knownc}")
+                sys.stdout.flush()
             else:
                 print("Failed to find decomposition")
+                sys.stdout.flush()
                 cval += 1
                 tlb = cval
 
         except subprocess.TimeoutExpired:
             print(f"Timeout: Width is between {tlb} and {tub}")
+            sys.stdout.flush()
             return -1, None
 
     print(f"\nFound tree width {tub}, C: {knownc}")
+    sys.stdout.flush()
     return tub, ordering
