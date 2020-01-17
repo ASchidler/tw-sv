@@ -16,6 +16,18 @@ args = parser.parse_args()
 g, c_vertices = ps.parse(args.graph)
 is_ctw = args.ctw
 
+
+def terminateProcess():
+    if os.path.exists(filename):
+        os.remove(filename)
+    if os.path.exists(fileout):
+        os.remove(fileout)
+
+    exit(1)
+
+
+signal.signal(signal.SIGTERM, terminateProcess)
+
 # Upper bound is already a solution, so look starting from ub - 1
 filename = f"{os.getpid()}_encoding.txt"
 fileout = f"{os.getpid()}_result.txt"

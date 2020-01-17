@@ -10,11 +10,17 @@ def solve(g, inpf, outpf, timeout=1800):
     print(f"Graph has {len(g.nodes)} nodes and {len(g.edges)} edges")
     ub, ordering = ubs.greedy_min_degree(g)
     lb = lbs.lbnp(g)
+
     print(f"Upper Bound: {ub}")
     print(f"Lower Bound: {lb}")
     sys.stdout.flush()
 
     cval = ub - 1
+    if target_tw:
+        cval = target_tw
+        lb = target_tw
+        ub = min(ub, target_tw+1)
+
     lb_done = False
 
     # Incrementally search
@@ -51,6 +57,7 @@ def solve(g, inpf, outpf, timeout=1800):
             # If Timeout exceeded, try other direction
             if not lb_done:
                 print("Timeout: Restarting from lower bound")
+                sys.stdout.flush()
                 lb_done = True
                 cval = lb
             else:
