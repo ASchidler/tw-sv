@@ -3,14 +3,16 @@ import lower_bounds as lbs
 import sv_improved as svi
 import subprocess
 import tw_utils
+import sys
 
 
-def solve(g, inpf, outpf, timeout=300):
+def solve(g, inpf, outpf, timeout=1800):
     print(f"Graph has {len(g.nodes)} nodes and {len(g.edges)} edges")
     ub, ordering = ubs.greedy_min_degree(g)
     lb = lbs.lbnp(g)
     print(f"Upper Bound: {ub}")
     print(f"Lower Bound: {lb}")
+    sys.stdout.flush()
 
     cval = ub - 1
     lb_done = False
@@ -25,7 +27,7 @@ def solve(g, inpf, outpf, timeout=300):
         # TODO: Insert a spaceholder for the header, to be overwritten later, i.e. use upper bounds for the number of variables and clauses...
         slv.encode_sat(cval)
         f2.close()
-        p1 = subprocess.Popen(['minisat', '-verb=0', inpf, outpf], stdout=None, stderr=None)
+        p1 = subprocess.Popen(['/home1/aschidler/minisat', '-verb=0', inpf, outpf], stdout=None, stderr=None)
         try:
             p1.wait(timeout)
 
@@ -38,8 +40,10 @@ def solve(g, inpf, outpf, timeout=300):
                 ub = max(len(cb) - 1 for cb in b.values())
                 cval = ub - 1
                 print(f"Found decomposition of size {ub}")
+                sys.stdout.flush()
             else:
                 print("Failed to find decomposition")
+                sys.stdout.flush()
                 cval += 1
                 lb = cval
 
@@ -51,7 +55,9 @@ def solve(g, inpf, outpf, timeout=300):
                 cval = lb
             else:
                 print(f"Timeout: Width is between {lb} and {ub}")
+                sys.stdout.flush()
                 return -1, None
 
     print(f"\nFound tree width {ub}")
+    sys.stdout.flush()
     return ub, ordering
