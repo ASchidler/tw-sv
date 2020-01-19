@@ -1,13 +1,22 @@
 import networkx as nx
+import bz2
 
 
 def parse(path):
-    f = open(path)
+    if path.lower().endswith(".bz2"):
+        f = bz2.open(path, mode='rb')
+    else:
+        f = open(path)
+
     g = nx.Graph()
     c_vertices = set()
 
     mode_edges = True
     for line in f:
+        try:
+            line = line.decode('ascii')
+        except AttributeError:
+            pass
         entries = line.strip().split()
         if mode_edges:
             if line.lower().strip() == "cvertices":

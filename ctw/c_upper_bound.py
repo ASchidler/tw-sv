@@ -66,6 +66,7 @@ class BoundedCCriterion(crit.MinDegreeCriterion):
             for n in self.q[cval]:
                 rval = 1 if n in self.reds else 0
                 rval += len(set(self.g[n]) & self.reds)
+
                 if self.limit >= rval > maxval[0]:
                     maxval = (rval, n)
 
@@ -115,15 +116,16 @@ class MinCCriterion:
 class IncrementalCriterion:
     """Tries to bound c, whenever it fails, it increments the bound and restarts"""
 
-    def __init__(self, g, reds):
+    def __init__(self, g, reds, lb):
         self.g = g
         self.reds = reds
         self.ordering = None
+        self.lb = lb
 
     def next(self):
         # since the normal method does not support backtracking, this is a little bit of a hack...
         if self.ordering is None:
-            bound = 1
+            bound = self.lb
             while True:
                 try:
                     self.ordering = []
@@ -150,7 +152,6 @@ def greedy(g, criterion, reds):
     c = max(len(x & reds) for x in bags.values())
 
     tw, c = improve_swap(g, ordering, reds, bound_tw=tw, bound_c=c)
-    #tw, c = improve_scramble(g, ordering, reds, bound_c=c, bound_tw=tw)
 
     return tw, c, ordering
 
@@ -165,13 +166,13 @@ def min_c(g, reds):
 
 def c_bound_min_degree(g, reds, bound):
     try:
-        return greedy(g, BoundedCCriterion(g, reds, bound),reds)
+        return greedy(g, BoundedCCriterion(g, reds, bound), reds)
     except RuntimeError:
         return maxsize, maxsize
 
 
-def incremental_c_min_degree(g, reds):
-    return greedy(g, IncrementalCriterion(g, reds), reds)
+def incremental_c_min_degree(g, reds, lb):
+    return greedy(g, IncrementalCriterion(g, reds, lb), reds)
 
 
 def min_degree_min_c(g, reds):
@@ -181,7 +182,7 @@ def min_degree_min_c(g, reds):
 def twopass(g, reds):
     result = greedy(g, MinCCriterion(g, reds), reds)
     try:
-        return greedy(g, BoundedCCriterion(g, reds, result[1]), reds)
+        return greedy(g, BoundedCCriterion(g, reds, result[1] - 1), reds)
     except RuntimeError:
         return result
 
