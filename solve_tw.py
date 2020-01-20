@@ -16,11 +16,6 @@ def solve(g, inpf, outpf, timeout=1800):
     sys.stdout.flush()
 
     cval = ub - 1
-    if target_tw:
-        cval = target_tw
-        lb = target_tw
-        ub = min(ub, target_tw+1)
-
     lb_done = False
 
     # Incrementally search

@@ -67,5 +67,5 @@ with open(output_path, "w+") as op:
                     op.write(";;")
             else:
                 op.write(";")
-                op.write(rr)
+                op.write(rr.replace(";{}".format(sys.maxsize), ";"))
         op.write(os.linesep)

@@ -56,8 +56,10 @@ for ratio in ratios:
         base_c = max(len(x & c_vertices) for x in base_decomp[0].values())
         c_output.write("t w {} c {}\n".format(base_tw, base_c))
 
+        min_c, max_t = solve_ctw.solve_c(graph, c_vertices, inpf, outpf)
+
         for offset in offsets:
-            c_tw, c_ord = solve_ctw.solve(graph, c_vertices, inpf, outpf, offset=offset)
+            c_tw, c_ord = solve_ctw.solve(graph, c_vertices, inpf, outpf, c_val=min_c + offset, tub=max_t)
 
             if c_tw is not None:
                 c_decomp = tw_utils.ordering_to_decomp(graph, c_ord)
@@ -66,5 +68,6 @@ for ratio in ratios:
                 output_graph(c_decomp[0], c_decomp[1], os.path.join(output_path, c_output_name + ".decomp"))
 
                 # Already optimal
+                max_t = c_tw
                 if c_tw == base_tw:
                     break

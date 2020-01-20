@@ -9,7 +9,7 @@ ratios = ["05", "10", "20"]
 
 
 def vts(val):
-    return "{}".format(val) if val is not None else ""
+    return "{}".format(val) if val is not None and val < sys.maxsize else ""
 
 
 class RunResult:

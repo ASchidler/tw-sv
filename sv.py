@@ -110,7 +110,7 @@ class SvEncoding:
         stream.write("(check-sat)\n")
         stream.write("(get-model)\n")
 
-    def encode_sat(self, target):
+    def encode_sat(self, target, cardinality=True):
         # We do not know the exact number of variables and clauses beforehand. Leave a placeholder to change afterwards
         # equals to ord + arc + ctr
         estimated_vars = 2 * len(self.g.nodes) * len(self.g.nodes) + len(self.g.nodes) * len(self.g.nodes) * target
@@ -132,7 +132,8 @@ class SvEncoding:
                 self._ord(i, j)
 
         self.encode()
-        self.encode_cardinality_sat(target, self.arc)
+        if cardinality:
+            self.encode_cardinality_sat(target, self.arc)
 
         header = f"p cnf {len(self.vars) - 1} {self.num_clauses}"
         self.stream.seek(0)
