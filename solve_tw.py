@@ -28,7 +28,7 @@ def solve(g, inpf, outpf, timeout=1800):
         # TODO: Insert a spaceholder for the header, to be overwritten later, i.e. use upper bounds for the number of variables and clauses...
         slv.encode_sat(cval)
         f2.close()
-        p1 = subprocess.Popen(['/home1/aschidler/minisat', '-verb=0', inpf, outpf], stdout=None, stderr=None)
+        p1 = subprocess.Popen(['minisat', '-verb=0', inpf, outpf], stdout=None, stderr=None)
         try:
             p1.wait(timeout)
 

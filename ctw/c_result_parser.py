@@ -5,7 +5,7 @@ from collections import defaultdict
 path = sys.argv[1]
 output_path = sys.argv[2]
 
-ratios = ["05", "10", "20"]
+ratios = ["05", "10", "20", "30"]
 
 
 def vts(val):

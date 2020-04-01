@@ -10,13 +10,12 @@ import sys
 
 def solve_c(g, c_vertices, inpf, outpf, timeout=1800):
     c_lb = clb.c_lower_bound(g, c_vertices)
-    tub, cub, ordering = cb.min_c(g, c_vertices)
+    t_val, cub, ordering = cb.min_c(g, c_vertices)
     val = cub - 1
-    t_val = None
     while c_lb <= val < cub:
-        print(f"\nLooking for decomposition of with C: {cub}")
+        print(f"\nLooking for decomposition of with C: {val}")
         f2 = open(inpf, "w+")
-        slv = svc.CTwEncoding(c_vertices, cub, f2, g)
+        slv = svc.CTwEncoding(c_vertices, val, f2, g)
 
         slv.encode_sat(0, cardinality=False)
         f2.close()
@@ -44,7 +43,7 @@ def solve_c(g, c_vertices, inpf, outpf, timeout=1800):
             print(f"Timeout")
             sys.stdout.flush()
             return None
-    return cub, t_val
+    return cub, t_val, ordering
 
 
 def solve(g, c_vertices, inpf, outpf, c_val, tub=None, timeout=1800):
@@ -52,8 +51,10 @@ def solve(g, c_vertices, inpf, outpf, c_val, tub=None, timeout=1800):
         return -1, None
     print(f"Graph has {len(g.nodes)} nodes, {len(g.edges)} edges and {len(c_vertices)} c-vertices")
 
-    if tub is None:
-        tub, cub, ordering = cb.min_c(g, c_vertices)
+    tub2, cub, ordering = cb.min_c(g, c_vertices)
+    if tub is None or (cub == c_val and tub2 < tub):
+        tub = tub2
+
     print(f"Upper bound C: {c_val}, tree width {tub}")
     sys.stdout.flush()
 

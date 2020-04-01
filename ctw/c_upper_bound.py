@@ -148,7 +148,7 @@ def greedy(g, criterion, reds):
         ordering.append(criterion.next())
 
     bags = util.ordering_to_decomp(g, ordering)[0]
-    tw = max(len(x) for x in bags.values())
+    tw = max(len(x) for x in bags.values()) - 1
     c = max(len(x & reds) for x in bags.values())
 
     tw, c = improve_swap(g, ordering, reds, bound_tw=tw, bound_c=c)

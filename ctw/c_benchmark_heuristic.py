@@ -11,12 +11,13 @@ input_path = sys.argv[1]
 output_path = sys.argv[2]
 graph, _ = cp.parse(input_path)
 # Fix seed for reproducibility
-random.seed(len(graph.edges) + len(graph.nodes))
+random.seed(a=str(len(graph.edges) + len(graph.nodes)))
 
 _, instance_name = os.path.split(input_path)
 
 # shuffle vertices randomly
 vertex_list = list(graph.nodes)
+vertex_list.sort()
 for i in range(0, len(vertex_list)-1):
     nxt = random.randint(i, len(vertex_list) - 1)
     vertex_list[i], vertex_list[nxt] = vertex_list[nxt], vertex_list[i]
@@ -42,6 +43,7 @@ for ratio in ratios:
 
     # Output results
     with open(os.path.join(output_path, "{}.heuristic".format(c_output_name)), "w+") as c_output:
+        c_output = sys.stdout
         c_output.write(f"{min_w};{min_c}")
         heuristics = list(bounds.keys())
         heuristics.sort()
