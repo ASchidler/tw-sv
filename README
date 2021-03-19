@@ -1,0 +1,12 @@
+This is an implementation of the treewidth SAT encoding by Samer and Veith, including common heuristics for
+upper and lower bounds.
+The encoding can be found in sv.py and some common improvements in sv_improved.py.
+
+The code requires networkx and and minisat in the path.
+Then running "solve.py <instance>"" will find the optimal treewidth.
+
+The code is pending major refactoring in the (near) future.
+
+This version also contains the code for threshold-treewidth as proposed in the paper
+"Threshold Treewidth and Hypertree Width" (https://www.ijcai.org/proceedings/2020/263).
+The respective code can be found in the ctw folder.

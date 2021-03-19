@@ -2,7 +2,7 @@ import argparse
 import os
 
 import ctw.solve_ctw as solve_ctw
-import parse.ctw_parser as ps
+import ctw.ctw_parser as ps
 import solve_tw
 import signal
 

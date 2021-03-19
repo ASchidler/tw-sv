@@ -4,7 +4,7 @@ import sys
 
 import ctw.c_lower_bound as lb
 import ctw.c_upper_bound as cb
-import parse.ctw_parser as cp
+import ctw.ctw_parser as cp
 
 ratios = [0.05, 0.1, 0.2]
 input_path = sys.argv[1]

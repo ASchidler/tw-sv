@@ -3,7 +3,7 @@ import random
 import sys
 
 import ctw.solve_ctw as solve_ctw
-import parse.ctw_parser as cp
+import ctw.ctw_parser as cp
 import solve_tw
 import tw_utils
 

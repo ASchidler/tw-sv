@@ -1,7 +1,7 @@
 from sys import maxsize
 
 import tw_utils as util
-import upper_bound_criteria as crit
+import upper_bounds as crit
 from random import randint
 import networkx as nx
 

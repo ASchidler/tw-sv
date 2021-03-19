@@ -1,13 +1,10 @@
-import argparse
 import os
 
-import ctw.solve_ctw as solve_ctw
-import parse.ctw_parser as ps
+import ctw.ctw_parser as ps
 import solve_tw
-import signal
 import tw_utils
 
-path = "/home/aschidler/Downloads/twlib-filtered"
+path = ""
 
 instances = [
 ('pignet2-pp-minor-0009.dgf',8),

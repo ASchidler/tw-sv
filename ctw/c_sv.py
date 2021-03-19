@@ -2,6 +2,7 @@ import sv_improved as sv
 
 
 class CTwEncoding(sv.ImprovedSvEncoding):
+    """Extends the base treewidth encoding with cardinality constraints for heavy vertices"""
     def __init__(self, reds, red_limit, stream, g):
         super().__init__(stream, g)
         self.reds = {self.node_lookup[x] for x in reds}

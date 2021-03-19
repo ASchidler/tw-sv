@@ -1,10 +1,11 @@
 import os
 import bz2
+import sys
 
 # Path to search for instances
-path = "/home/aschidler/Downloads/graphs-master/treewidth_benchmarks/twlib-graphs/twlib-graphs"
+path = sys.argv[1]
 # Path to output the instances that match criteria
-outpath = "/home/aschidler/Downloads/twlib-filtered"
+outpath = sys.argv[2]
 
 
 def verify_file(str, filename):
