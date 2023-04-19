@@ -1,10 +1,10 @@
 import sv_improved as sv
-
+from pysat.card import CardEnc
 
 class CTwEncoding(sv.ImprovedSvEncoding):
     """Extends the base treewidth encoding with cardinality constraints for heavy vertices"""
-    def __init__(self, reds, red_limit, stream, g):
-        super().__init__(stream, g)
+    def __init__(self, reds, red_limit, g):
+        super().__init__(g)
         self.reds = {self.node_lookup[x] for x in reds}
         self.red_limit = red_limit
 
@@ -14,8 +14,8 @@ class CTwEncoding(sv.ImprovedSvEncoding):
 
     def encode_c_counter(self, c):
         # Add dummy-var that is always true, see below for use
-        t_var = self._add_var()
-        self._add_clause(t_var)
+        t_var = self.pool.id("t_var")
+        self.formula.append([t_var])
 
         rlist = list(self.reds)
         target_variables = [list() for _ in range(0, len(self.g.nodes))]
@@ -28,7 +28,7 @@ class CTwEncoding(sv.ImprovedSvEncoding):
                 if n == u and n in self.reds:
                     d.append(t_var)
                 else:
-                    d.append(self.arc[n][u])
+                    d.append(self._arc(n, u))
             n += 1
 
-        self.encode_cardinality_sat(c, target_variables)
+            self.formula.extend(CardEnc.atmost(d, c, vpool=self.pool))

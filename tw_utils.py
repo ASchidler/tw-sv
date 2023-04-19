@@ -7,7 +7,7 @@ def ordering_to_decomp(g_in, ordering):
 
     bags = {n: {n} for n in ordering}
     tree = DiGraph()
-    ps = {x: ordering.index(x) for x in ordering}
+    ps = {x: i for i, x in enumerate(ordering)}
 
     # Add edges to bags
     for u, v in g_in.edges:

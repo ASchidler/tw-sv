@@ -13,10 +13,10 @@ class ImprovedSvEncoding(sv.SvEncoding):
         for i in range(0, len(self.g.nodes)):
             for j in range(i+1, len(self.g.nodes)):
                 # Arcs cannot go in both directions
-                self._add_clause(-self.arc[j][i], -self.arc[i][j])
+                self.formula.append([-self._arc(j, i), -self._arc(i, j)])
                 # Enforce arc direction from smaller to bigger ordered vertex
-                self._add_clause(-self.ord[i][j], -self.arc[j][i])
-                self._add_clause(self.ord[i][j], -self.arc[i][j])
+                self.formula.append([-self._ord(i, j), -self._arc(j, i)])
+                self.formula.append([self._ord(i, j), -self._arc(i, j)])
 
         super().encode()
 
@@ -35,7 +35,7 @@ class ImprovedSvEncoding(sv.SvEncoding):
             n = self.node_lookup[n]
             for u in clique:
                 u = self.node_lookup[u]
-                self._add_clause(self._ord(n, u))
+                self.formula.append([self._ord(n, u)])
 
         # order clique lexicographically
         for u in clique:
@@ -44,5 +44,5 @@ class ImprovedSvEncoding(sv.SvEncoding):
                 v = self.node_lookup[v]
 
                 if u < v:
-                    self._add_clause(self.ord[u][v])
-                    self._add_clause(self.arc[u][v])
+                    self.formula.append([self._ord(u,v)])
+                    self.formula.append([self._arc(u,v)])
