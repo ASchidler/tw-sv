@@ -11,8 +11,8 @@ parser = argparse.ArgumentParser(description='Calculates the treewidth of a grap
 parser.add_argument('graph', metavar='graph_file', type=str, help='The input file containing the graph')
 parser.add_argument('-c', dest='ctw', action='store_true', default=False, help='Treat as c-treewidth instance')
 parser.add_argument('-o', dest='offset', type=int, default=0, choices=range(0, 10), help='Use minimal c + offset')
-parser.add_argument("-m", dest='maxsat', type=str, default=None, help="Write MaxSAT encoding to file.")
-parser.add_argument("-d", dest="sep_cards", action="store_true", default=False, help="Store cardinalities separately")
+parser.add_argument("-j", dest='maxsat', type=str, default=None, help="Export MaxSAT encoding to file.")
+parser.add_argument("-p", dest="sep_cards", action="store_true", default=False, help="Store cardinalities separately")
 
 args = parser.parse_args()
 
